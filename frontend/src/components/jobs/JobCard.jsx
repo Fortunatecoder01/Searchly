@@ -1,11 +1,19 @@
 export default function JobCard({ job }) {
   return (
-    <div className="border p-4 rounded mb-3">
-      <h3 className="font-bold">{job.title}</h3>
-      <p>{job.company}</p>
-      <a href={job.url} className="text-blue-600 underline">
-        View Job
-      </a>
+    <div style={{
+      border: "1px solid #ccc",
+      padding: "15px",
+      marginTop: "15px",
+      borderRadius: "8px"
+    }}>
+      <h3>{job.title}</h3>
+
+      <p>Company: {job.company}</p>
+      <p>Location: {job.location}</p>
+
+      <p>
+        Skills: {job.skills.join(", ")}
+      </p>
     </div>
   );
 }

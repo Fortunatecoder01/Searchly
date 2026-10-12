@@ -11,3 +11,14 @@ export async function startAgent(payload) {
 export async function getAgentStatus(runId) {
   return fetch(`${API_BASE}/api/agent/run/${runId}`).then(r => r.json());
 }
+export async function searchJobs(searchTerm = "") {
+  const response = await fetch(
+    `/jobs?search=${encodeURIComponent(searchTerm)}`
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch jobs");
+  }
+
+  return response.json();
+}
