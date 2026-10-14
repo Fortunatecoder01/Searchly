@@ -1,5 +1,23 @@
+@import "tailwindcss";
+
+/* Searchly design tokens: use these names (bg-ink, text-muted, border-line...) instead of raw colors */
+@theme {
+  --font-sans: "Schibsted Grotesk", system-ui, sans-serif;
+
+  --color-ink: #14213d;      /* headings and body text */
+  --color-muted: #5b6478;    /* secondary text */
+  --color-line: #e2e5ee;     /* borders and dividers */
+  --color-canvas: #f6f7fb;   /* page background */
+  --color-brand: #2b4acb;    /* buttons, links, focus */
+  --color-brand-dark: #1f379d;
+  --color-marigold: #f2b632; /* highlight, use sparingly */
+}
+
 body {
-  margin: 0;
-  font-family: sans-serif;
-  background: #fafafa;
+  @apply bg-canvas text-ink font-sans antialiased;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 2px;
 }
