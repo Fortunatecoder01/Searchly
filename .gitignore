@@ -3,3 +3,6 @@ frontend/dist/
 __pycache__/
 .env
 
+__pycache__/
+*.pyc
+searchly-backend/*.db
