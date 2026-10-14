@@ -1,9 +1,39 @@
+import { useState,useEffect } from "react";
+import { saveJob } from "../../services/api";
 export default function JobCard({ job }) {
+  const [isSaved, setIsSaved] = useState(false);
+  useEffect(() => {
+    async function checkIfSaved() {
+      try {
+        const response = await fetch("/saved_jobs");
+        if (!response.ok) {
+          throw new Error("Failed to fetch saved jobs");
+        }
+        const savedjobs = await response.json();
+        const alreadySaved = savedjobs.some(savedJob => savedJob.id === job.id);
+        setIsSaved(alreadySaved);
+      } catch (error) {
+        console.error("Error checking saved job:", error);
+      }
+    }
+
+    checkIfSaved();
+  }, [job.id]);
+
   const initials = job.company
     .split(" ")
     .map(word => word[0])
     .join("")
     .slice(0, 2);
+
+  const handleSaveJob = async () => {
+    try {
+      await saveJob(job.id);
+      setIsSaved(true);
+    } catch (error) {
+      console.error("Error saving job:", error);
+    }
+  };
 
   return (
     <article className="flex items-start gap-4 p-5 hover:bg-canvas transition-colors">
@@ -26,6 +56,16 @@ export default function JobCard({ job }) {
             </li>
           ))}
         </ul>
+        <button
+          type="button"
+          onClick={handleSaveJob}
+          disabled={isSaved}
+          className={`mt-3 rounded-md px-3 py-1.5 text-sm font-medium text-white transition-colors ${
+            isSaved ? "bg-gray-400 cursor-not-allowed" : "bg-blue-500 hover:bg-blue-600"
+          }`}
+        >
+          {isSaved ? "Saved" : "Save Job"}
+        </button>
       </div>
 
     </article>

@@ -1,6 +1,8 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
+import database
 
 app = FastAPI()
+database.create_database()
 jobs = [
     {
         "id": 1,
@@ -79,9 +81,24 @@ jobs = [
 @app.get("/jobs")
 def search_jobs(search: str = ""):
     results = []
-
+    search = search.strip().lower()
     for job in jobs:
-        if search.lower() in job["title"].lower():
+        details = " ".join([job["title"], job["company"], job["location"]] + job["skills"]).lower()
+        if search in details:
             results.append(job)
-
     return results
+
+@app.post("/saved_jobs/{job_id}")
+def save_job(job_id: int):
+    job = next((job for job in jobs if job["id"] == job_id), None)
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    database.save_job(job_id)
+    return {"message": "Job saved successfully"}
+
+
+@app.get("/saved_jobs")
+def get_saved_jobs():
+    saved_job_ids = database.get_saved_job_ids()
+    return [job for job in jobs if job["id"] in saved_job_ids]  
+    
