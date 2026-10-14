@@ -1,7 +1,8 @@
 {
-  "name": "job-agent-frontend",
+  "name": "searchly-frontend",
   "version": "0.0.1",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -14,7 +15,9 @@
     "zustand": "^4.5.2"
   },
   "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
     "@vitejs/plugin-react": "^4.0.0",
+    "tailwindcss": "^4.3.3",
     "vite": "^5.0.0"
   }
 }

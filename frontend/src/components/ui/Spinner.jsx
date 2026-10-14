@@ -1,3 +1,8 @@
-export default function Spinner() {
-  return <div className="animate-spin h-6 w-6 border-4 border-blue-600 rounded-full"></div>;
+export default function Spinner({ label = "Loading" }) {
+  return (
+    <div role="status" className="flex items-center gap-3 text-muted">
+      <div className="h-5 w-5 animate-spin rounded-full border-2 border-line border-t-brand motion-reduce:animate-none" />
+      <span>{label}</span>
+    </div>
+  );
 }
