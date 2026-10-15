@@ -114,7 +114,7 @@ jobs = [
         "id": 16,
         "title": "Technical Support Representative",
         "company": "Dell",
-        "location": "Texas”,
+        "location": "Texas",
         "skills": ["Troubleshooting", "Customer Support"]
     },
     {
