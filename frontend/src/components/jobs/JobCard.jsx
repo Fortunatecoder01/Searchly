@@ -1,16 +1,24 @@
-import { useState,useEffect } from "react";
+
+import { useState, useEffect } from "react";
 import { saveJob } from "../../services/api";
+
 export default function JobCard({ job }) {
   const [isSaved, setIsSaved] = useState(false);
+
   useEffect(() => {
     async function checkIfSaved() {
       try {
         const response = await fetch("/saved_jobs");
+
         if (!response.ok) {
           throw new Error("Failed to fetch saved jobs");
         }
+
         const savedjobs = await response.json();
-        const alreadySaved = savedjobs.some(savedJob => savedJob.id === job.id);
+        const alreadySaved = savedjobs.some(
+          savedJob => savedJob.id === job.id
+        );
+
         setIsSaved(alreadySaved);
       } catch (error) {
         console.error("Error checking saved job:", error);
@@ -45,29 +53,46 @@ export default function JobCard({ job }) {
       </div>
 
       <div className="flex-1 min-w-0">
-        <h3 className="text-lg font-bold leading-snug">{job.title}</h3>
+        <h3 className="text-lg font-bold leading-snug">
+          {job.title}
+        </h3>
+
         <p className="text-muted">
           {job.company}, {job.location}
         </p>
+
+        {typeof job.match_score === "number" && (
+          <div className="mt-2">
+            <span className="inline-block rounded-md bg-blue-100 px-3 py-1 text-sm font-semibold text-blue-700">
+              Skill Match: {(job.match_score * 100).toFixed(1)}%
+            </span>
+          </div>
+        )}
+
         <ul className="mt-3 flex flex-wrap gap-1.5">
           {job.skills.map(skill => (
-            <li key={skill} className="rounded-md bg-canvas border border-line px-2 py-0.5 text-xs font-medium">
+            <li
+              key={skill}
+              className="rounded-md bg-canvas border border-line px-2 py-0.5 text-xs font-medium"
+            >
               {skill}
             </li>
           ))}
         </ul>
+
         <button
           type="button"
           onClick={handleSaveJob}
           disabled={isSaved}
           className={`mt-3 rounded-md px-3 py-1.5 text-sm font-medium text-white transition-colors ${
-            isSaved ? "bg-gray-400 cursor-not-allowed" : "bg-blue-500 hover:bg-blue-600"
+            isSaved
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-blue-500 hover:bg-blue-600"
           }`}
         >
           {isSaved ? "Saved" : "Save Job"}
         </button>
       </div>
-
     </article>
   );
 }

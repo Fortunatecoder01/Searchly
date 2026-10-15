@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException
+from jobmatcher import match_jobs
 import database
 
 app = FastAPI()
@@ -73,7 +74,7 @@ jobs = [
         "company": "SkyStack",
         "location": "Washington, DC",
         "skills": ["AWS", "Docker", "Linux"]
-    }  
+    }
 ]
 
 
@@ -100,5 +101,58 @@ def save_job(job_id: int):
 @app.get("/saved_jobs")
 def get_saved_jobs():
     saved_job_ids = database.get_saved_job_ids()
-    return [job for job in jobs if job["id"] in saved_job_ids]  
-    
+    return [job for job in jobs if job["id"] in saved_job_ids]
+
+@app.delete("/saved_jobs/{job_id}")
+
+def unsave_job(job_id: int):
+    removed = database.remove_saved_job(job_id)
+
+    if not removed:
+        raise HTTPException(status_code=404, detail="Saved job not found")
+
+    return {"message": "Job unsaved successfully"}
+
+
+@app.post("/applications/{job_id}")
+def add_application(job_id: int):
+    job = next((job for job in jobs if job["id"] == job_id), None)
+
+    if job is None:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    database.add_application(job_id)
+
+    return {"message": "Application recorded successfully"}
+
+
+@app.get("/applications")
+def get_applications():
+    records = database.get_applications()
+    results = []
+
+    for record in records:
+        job = next(
+            (job for job in jobs if job["id"] == record["job_id"]),
+            None
+        )
+
+        if job is not None:
+            results.append({
+                **job,
+                "status": record["status"],
+                "applied_at": record["applied_at"]
+            })
+
+    return results
+
+
+@app.get("/recommendations")
+def recommend_jobs(skills: str = ""):
+    if not skills.strip():
+        raise HTTPException(
+            status_code=400,
+            detail="Please enter at least one skill"
+        )
+
+    return match_jobs(skills, jobs)
