@@ -74,7 +74,253 @@ jobs = [
         "company": "SkyStack",
         "location": "Washington, DC",
         "skills": ["AWS", "Docker", "Linux"]
+    },
+    {
+        "id": 11,
+        "title": "Help Desk Intern",
+        "company": "SAIC",
+        "location": "Maryland",
+        "skills": ["Hardware Support", "Active Directory"]
+    },
+    {
+        "id": 12,
+        "title": "IT Help Desk Technician",
+        "company": "Deloitte",
+        "location": "Virginia",
+        "skills": [ "Windows", "Hardware Troubleshooting"]
+    },
+    {
+        "id": 13,
+        "title": "Junior IT Support Specialist",
+        "company": "General Dynamics",
+        "location": "Florida",
+        "skills": ["Remote Support", "Microsoft 365"]
+    },
+    {
+        "id": 14,
+        "title": "Service Desk Analyst",
+        "company": "TCS",
+        "location": "Baltimore, MD",
+        "skills": ["Technical Support", "Ticket Management"]
+    },
+    {
+        "id": 15,
+        "title": "Desktop Support Technician",
+        "company": "Capital One",
+        "location": "Virginia",
+        "skills": ["Windows", "Imaging"]
+    },
+    {
+        "id": 16,
+        "title": "Technical Support Representative",
+        "company": "Dell",
+        "location": "Texas”,
+        "skills": ["Troubleshooting", "Customer Support"]
+    },
+    {
+        "id": 17,
+        "title": "Junior Systems Administrator",
+        "company": "Lockheed Martin",
+        "location": "Colorado",
+        "skills": ["Powershell", "Windows Server"]
+    },
+    {
+        "id": 18,
+        "title": "IT Operations Analyst (Entry-Level)",
+        "company": "PwC",
+        "location": "Detroit, MC",
+        "skills": ["Monitoring", "Documentation", "Incident Management"]
+    },
+    {
+        "id": 19,
+        "title": "Computer Support Specialist",
+        "company": "Radford University",
+        "location": "Virginia",
+        "skills": ["Windows", "Networking", "Hardware Support"]
+    },
+    {
+        "id": 20,
+        "title": "Cloud Support Associate",
+        "company": "Microsoft Azure",
+        "location": "Washington",
+        "skills": ["AWS", "Networking Fundamentals", "Linux"]
+    },
+    {
+        "id": 21,
+        "title": "Cloud Operations Intern",
+        "company": "Google Cloud",
+        "location": "Georgia",
+        "skills": ["Azure", "Linux", "Monitoring Tools"]
+    },
+    {
+        "id": 22,
+        "title": "Junior Cloud Engineer",
+        "company": "IBM",
+        "location": "Chicago, IL",
+        "skills": ["Terraform", "AWS", "Python"]
+    },
+    {
+        "id": 23,
+        "title": "DevOps Intern",
+        "company": "Red Hat",
+        "location": "North Carolina",
+        "skills": ["Linux", "Docker", "Git"]
+    },
+    {
+        "id": 24,
+        "title": "Junior DevOps Engineer",
+        "company": "Capital One",
+        "location": "Virginia",
+        "skills": ["Jenkins", "GitHub"]
+    },
+    {
+        "id": 25,
+        "title": "Cloud Infrastructure Analyst",
+        "company": "KPMG",
+        "location": "Boston, MA",
+        "skills": ["Networking", "Virtualization", "AWS"]
+    },
+    {
+        "id": 26,
+        "title": "Associate Cloud Engineer",
+        "company": "Google",
+        "location": "Remote",
+        "skills": ["Linux", "Scripting", "Azure"]
+    },
+    {
+        "id": 27,
+        "title": "Site Reliability Engineer Intern",
+        "company": "IBM",
+        "location": "Texas",
+        "skills": ["Linux", "Python", "Monitoring"]
+    },
+    {
+        "id": 28,
+        "title": "Kubernetes Intern",
+        "company": "NVIDIA",
+        "location": "California",
+        "skills": ["Docker", "Containers", "Linux"]
+    },
+    {
+        "id": 29,
+        "title": "Information Security Intern",
+        "company": "Exelon",
+        "location": "Maryland",
+        "skills": ["Compliance", "Documentation", "Security Awareness"]
+    },
+    {
+        "id": 30,
+        "title": "SOC Analyst",
+        "company": "Leidos",
+        "location": "Virginia",
+        "skills": ["Threat Monitoring", "Splunk"]
+    },
+    {
+        "id": 31,
+        "title": "Junior Cybersecurity Analyst",
+        "company": "Censeo Consulting Group",
+        "location": "Washington",
+        "skills": ["Incident Response", "Networking", "Security"]
+    },
+    {
+        "id": 32,
+        "title": "Cyber Defense Analyst",
+        "company": "System One",
+        "location": "Washington",
+        "skills": ["Threat Analysis", "Security Monitoring"]
+    },
+    {
+        "id": 33,
+        "title": "Security Operations Intern",
+        "company": "Sheppard Pratt",
+        "location": "Maryland",
+        "skills": ["Log Analysis", "Linux"]
+    },
+    {
+        "id": 34,
+        "title": "Junior Data Analyst",
+        "company": "Index Analytics LLC",
+        "location": "Maryland",
+        "skills": ["SQL", "Reporting"]
+    },
+    {
+        "id": 35,
+        "title": "Data Engineering Intern",
+        "company": "Stanley Black & Decker, Inc",
+        "location": "Maryland",
+        "skills": ["Python", "SQL", "ETL"]
+    },
+    {
+        "id": 36,
+        "title": "Junior Data Engineer",
+        "company": "SynergisticIT",
+        "location": "Remote",
+        "skills": ["Python", "SQL", "Cloud Platforms"]
+    },
+    {
+        "id": 37,
+        "title": "Reporting Analyst",
+        "company": "Transamerica",
+        "location": "Maryland",
+        "skills": ["Excel", "SQL"]
+    },
+    {
+        "id": 38,
+        "title": "Analytics Intern",
+        "company": "Stripe",
+        "location": "New York",
+        "skills": ["Excel", "Statistics", "Python"]
+    },
+    {
+        "id": 39,
+        "title": "Software Engineer Intern",
+        "company": "RTX Corp",
+        "location": "Maryland",
+        "skills": ["Python", "Git", "Java", "Data Structures"]
+    },
+    {
+        "id": 40,
+        "title": "Software Developer Intern",
+        "company": "IBM",
+        "location": "Texas",
+        "skills": ["Java", "C++", "Python"]
+    },
+    {
+        "id": 41,
+        "title": "Junior Software Developer",
+        "company": "T-Rex Solutions LLC",
+        "location": "Maryland",
+        "skills": ["APIs", "Databases", "Java"]
+    },
+    {
+        "id": 42,
+        "title": "Full-Stack Developer Intern",
+        "company": "Lockheed Martin",
+        "location": "Texas",
+        "skills": ["React", "SQL", "Node.js"]
+    },
+    {
+        "id": 43,
+        "title": "Front-End Developer Intern",
+        "company": "Verkada",
+        "location": "California",
+        "skills": ["JavaScript", "HTML", "CSS"]
+    },
+    {
+        "id": 44,
+        "title": "Back-End Developer Intern",
+        "company": "Robinhood",
+        "location": "New York",
+        "skills": ["Java", "APIs"]
+    },
+    {
+        "id": 45,
+        "title": "Mobile Application Developer Intern",
+        "company": "Comentum Corp",
+        "location": "California",
+        "skills": ["Kotlin", "Flutter", "Swift"]
     }
+
 ]
 
 
