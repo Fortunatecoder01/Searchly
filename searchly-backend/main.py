@@ -1,404 +1,500 @@
+
+import json
+import logging
+import re
+import time
+from resume_ai_routes import router as resume_ai_router
+from resume_builder import router as resume_builder_router
+from agent_ai import enhance_agent_jobs
+from urllib.request import Request, urlopen
+
 from fastapi import FastAPI, HTTPException
-from jobmatcher import match_jobs
+from pydantic import BaseModel, HttpUrl
+from resume_routes import router as resume_router
+
 import database
 
-app = FastAPI()
+from skills import extract_skills
+from job_requirements import extract_requirements
+from jobmatcher import match_jobs
+from himalayas_jobs import get_himalayas_jobs
+
+from agent_search import (
+    AgentSearchRequest,
+    recommend_agent_jobs
+)
+
+
+app = FastAPI(title="Searchly API")
+app.include_router(resume_router)
+app.include_router(resume_ai_router)
+app.include_router(resume_builder_router)
+
 database.create_database()
-jobs = [
-    {
-        "id": 1,
-        "title": "Software Engineering Intern",
-        "company": "ABC Corp",
-        "location": "Remote",
-        "skills": ["Python", "SQL", "Git"]
-    },
-    {
-        "id": 2,
-        "title": "Data Analyst Intern",
-        "company": "XYZ Corp",
-        "location": "Washington, DC",
-        "skills": ["Python", "SQL", "Excel"]
-    },
-    {
-        "id": 3,
-        "title": "Web Developer Intern",
-        "company": "Tech Company",
-        "location": "Remote",
-        "skills": ["JavaScript", "React", "HTML", "CSS"]
-    },
-    {
-        "id": 4,
-        "title": "Python Developer Intern",
-        "company": "Delta Solutions",
-        "location": "Baltimore, MD",
-        "skills": ["Python", "FastAPI", "Docker"]
-    },
-    {
-        "id": 5,
-        "title": "Backend Engineering Intern",
-        "company": "CloudNine Inc",
-        "location": "Remote",
-        "skills": ["Python", "PostgreSQL", "AWS"]
-    },
-    {
-        "id": 6,
-        "title": "Frontend Developer Intern",
-        "company": "PixelWorks",
-        "location": "New York, NY",
-        "skills": ["JavaScript", "React", "TypeScript"]
-    },
-    {
-        "id": 7,
-        "title": "Machine Learning Intern",
-        "company": "DataSense AI",
-        "location": "Remote",
-        "skills": ["Python", "TensorFlow", "Pandas"]
-    },
-    {
-        "id": 8,
-        "title": "IT Support Intern",
-        "company": "Morgan Systems",
-        "location": "Baltimore, MD",
-        "skills": ["Networking", "Windows", "Troubleshooting"]
-    },
-    {
-        "id": 9,
-        "title": "Cybersecurity Intern",
-        "company": "SecureNet",
-        "location": "Remote",
-        "skills": ["Linux", "Network Security", "Python"]
-    },
-    {
-        "id": 10,
-        "title": "Cloud Engineering Intern",
-        "company": "SkyStack",
-        "location": "Washington, DC",
-        "skills": ["AWS", "Docker", "Linux"]
-    },
-    {
-        "id": 11,
-        "title": "Help Desk Intern",
-        "company": "SAIC",
-        "location": "Maryland",
-        "skills": ["Hardware Support", "Active Directory"]
-    },
-    {
-        "id": 12,
-        "title": "IT Help Desk Technician",
-        "company": "Deloitte",
-        "location": "Virginia",
-        "skills": [ "Windows", "Hardware Troubleshooting"]
-    },
-    {
-        "id": 13,
-        "title": "Junior IT Support Specialist",
-        "company": "General Dynamics",
-        "location": "Florida",
-        "skills": ["Remote Support", "Microsoft 365"]
-    },
-    {
-        "id": 14,
-        "title": "Service Desk Analyst",
-        "company": "TCS",
-        "location": "Baltimore, MD",
-        "skills": ["Technical Support", "Ticket Management"]
-    },
-    {
-        "id": 15,
-        "title": "Desktop Support Technician",
-        "company": "Capital One",
-        "location": "Virginia",
-        "skills": ["Windows", "Imaging"]
-    },
-    {
-        "id": 16,
-        "title": "Technical Support Representative",
-        "company": "Dell",
-        "location": "Texas",
-        "skills": ["Troubleshooting", "Customer Support"]
-    },
-    {
-        "id": 17,
-        "title": "Junior Systems Administrator",
-        "company": "Lockheed Martin",
-        "location": "Colorado",
-        "skills": ["Powershell", "Windows Server"]
-    },
-    {
-        "id": 18,
-        "title": "IT Operations Analyst (Entry-Level)",
-        "company": "PwC",
-        "location": "Detroit, MC",
-        "skills": ["Monitoring", "Documentation", "Incident Management"]
-    },
-    {
-        "id": 19,
-        "title": "Computer Support Specialist",
-        "company": "Radford University",
-        "location": "Virginia",
-        "skills": ["Windows", "Networking", "Hardware Support"]
-    },
-    {
-        "id": 20,
-        "title": "Cloud Support Associate",
-        "company": "Microsoft Azure",
-        "location": "Washington",
-        "skills": ["AWS", "Networking Fundamentals", "Linux"]
-    },
-    {
-        "id": 21,
-        "title": "Cloud Operations Intern",
-        "company": "Google Cloud",
-        "location": "Georgia",
-        "skills": ["Azure", "Linux", "Monitoring Tools"]
-    },
-    {
-        "id": 22,
-        "title": "Junior Cloud Engineer",
-        "company": "IBM",
-        "location": "Chicago, IL",
-        "skills": ["Terraform", "AWS", "Python"]
-    },
-    {
-        "id": 23,
-        "title": "DevOps Intern",
-        "company": "Red Hat",
-        "location": "North Carolina",
-        "skills": ["Linux", "Docker", "Git"]
-    },
-    {
-        "id": 24,
-        "title": "Junior DevOps Engineer",
-        "company": "Capital One",
-        "location": "Virginia",
-        "skills": ["Jenkins", "GitHub"]
-    },
-    {
-        "id": 25,
-        "title": "Cloud Infrastructure Analyst",
-        "company": "KPMG",
-        "location": "Boston, MA",
-        "skills": ["Networking", "Virtualization", "AWS"]
-    },
-    {
-        "id": 26,
-        "title": "Associate Cloud Engineer",
-        "company": "Google",
-        "location": "Remote",
-        "skills": ["Linux", "Scripting", "Azure"]
-    },
-    {
-        "id": 27,
-        "title": "Site Reliability Engineer Intern",
-        "company": "IBM",
-        "location": "Texas",
-        "skills": ["Linux", "Python", "Monitoring"]
-    },
-    {
-        "id": 28,
-        "title": "Kubernetes Intern",
-        "company": "NVIDIA",
-        "location": "California",
-        "skills": ["Docker", "Containers", "Linux"]
-    },
-    {
-        "id": 29,
-        "title": "Information Security Intern",
-        "company": "Exelon",
-        "location": "Maryland",
-        "skills": ["Compliance", "Documentation", "Security Awareness"]
-    },
-    {
-        "id": 30,
-        "title": "SOC Analyst",
-        "company": "Leidos",
-        "location": "Virginia",
-        "skills": ["Threat Monitoring", "Splunk"]
-    },
-    {
-        "id": 31,
-        "title": "Junior Cybersecurity Analyst",
-        "company": "Censeo Consulting Group",
-        "location": "Washington",
-        "skills": ["Incident Response", "Networking", "Security"]
-    },
-    {
-        "id": 32,
-        "title": "Cyber Defense Analyst",
-        "company": "System One",
-        "location": "Washington",
-        "skills": ["Threat Analysis", "Security Monitoring"]
-    },
-    {
-        "id": 33,
-        "title": "Security Operations Intern",
-        "company": "Sheppard Pratt",
-        "location": "Maryland",
-        "skills": ["Log Analysis", "Linux"]
-    },
-    {
-        "id": 34,
-        "title": "Junior Data Analyst",
-        "company": "Index Analytics LLC",
-        "location": "Maryland",
-        "skills": ["SQL", "Reporting"]
-    },
-    {
-        "id": 35,
-        "title": "Data Engineering Intern",
-        "company": "Stanley Black & Decker, Inc",
-        "location": "Maryland",
-        "skills": ["Python", "SQL", "ETL"]
-    },
-    {
-        "id": 36,
-        "title": "Junior Data Engineer",
-        "company": "SynergisticIT",
-        "location": "Remote",
-        "skills": ["Python", "SQL", "Cloud Platforms"]
-    },
-    {
-        "id": 37,
-        "title": "Reporting Analyst",
-        "company": "Transamerica",
-        "location": "Maryland",
-        "skills": ["Excel", "SQL"]
-    },
-    {
-        "id": 38,
-        "title": "Analytics Intern",
-        "company": "Stripe",
-        "location": "New York",
-        "skills": ["Excel", "Statistics", "Python"]
-    },
-    {
-        "id": 39,
-        "title": "Software Engineer Intern",
-        "company": "RTX Corp",
-        "location": "Maryland",
-        "skills": ["Python", "Git", "Java", "Data Structures"]
-    },
-    {
-        "id": 40,
-        "title": "Software Developer Intern",
-        "company": "IBM",
-        "location": "Texas",
-        "skills": ["Java", "C++", "Python"]
-    },
-    {
-        "id": 41,
-        "title": "Junior Software Developer",
-        "company": "T-Rex Solutions LLC",
-        "location": "Maryland",
-        "skills": ["APIs", "Databases", "Java"]
-    },
-    {
-        "id": 42,
-        "title": "Full-Stack Developer Intern",
-        "company": "Lockheed Martin",
-        "location": "Texas",
-        "skills": ["React", "SQL", "Node.js"]
-    },
-    {
-        "id": 43,
-        "title": "Front-End Developer Intern",
-        "company": "Verkada",
-        "location": "California",
-        "skills": ["JavaScript", "HTML", "CSS"]
-    },
-    {
-        "id": 44,
-        "title": "Back-End Developer Intern",
-        "company": "Robinhood",
-        "location": "New York",
-        "skills": ["Java", "APIs"]
-    },
-    {
-        "id": 45,
-        "title": "Mobile Application Developer Intern",
-        "company": "Comentum Corp",
-        "location": "California",
-        "skills": ["Kotlin", "Flutter", "Swift"]
-    }
 
-]
+logger = logging.getLogger(__name__)
+
+remotive_cache = {
+    "jobs": None,
+    "expires": 0
+}
 
 
+# Verify US location eligibility from Remotive
+def is_us_eligible_location(location):
+    text = str(location or "").lower().strip()
+    text = text.replace(".", "")
 
-@app.get("/jobs")
-def search_jobs(search: str = ""):
-    results = []
-    search = search.strip().lower()
-    for job in jobs:
-        details = " ".join([job["title"], job["company"], job["location"]] + job["skills"]).lower()
-        if search in details:
-            results.append(job)
-    return results
+    if not text:
+        return False
 
-@app.post("/saved_jobs/{job_id}")
-def save_job(job_id: int):
-    job = next((job for job in jobs if job["id"] == job_id), None)
-    if not job:
-        raise HTTPException(status_code=404, detail="Job not found")
-    database.save_job(job_id)
-    return {"message": "Job saved successfully"}
+    excluded = re.search(
+        r"\b(?:excluding|except|outside|not available in)"
+        r"\s+(?:the\s+)?(?:us|usa|united states)\b"
+        r"|\bnon[- ]?us\b"
+        r"|\b(?:us|usa)\s+excluded\b",
+        text
+    )
 
+    if excluded:
+        return False
 
-@app.get("/saved_jobs")
-def get_saved_jobs():
-    saved_job_ids = database.get_saved_job_ids()
-    return [job for job in jobs if job["id"] in saved_job_ids]
-
-@app.delete("/saved_jobs/{job_id}")
-
-def unsave_job(job_id: int):
-    removed = database.remove_saved_job(job_id)
-
-    if not removed:
-        raise HTTPException(status_code=404, detail="Saved job not found")
-
-    return {"message": "Job unsaved successfully"}
+    return bool(re.search(
+        r"\b(us|usa|united states|worldwide|"
+        r"anywhere|global|north america)\b",
+        text
+    ))
 
 
-@app.post("/applications/{job_id}")
-def add_application(job_id: int):
-    job = next((job for job in jobs if job["id"] == job_id), None)
+# Fetch Remotive jobs
+def fetch_remotive_jobs():
+    now = time.time()
 
-    if job is None:
-        raise HTTPException(status_code=404, detail="Job not found")
+    if (
+        remotive_cache["jobs"] is not None
+        and now < remotive_cache["expires"]
+    ):
+        return remotive_cache["jobs"]
 
-    database.add_application(job_id)
-
-    return {"message": "Application recorded successfully"}
-
-
-@app.get("/applications")
-def get_applications():
-    records = database.get_applications()
-    results = []
-
-    for record in records:
-        job = next(
-            (job for job in jobs if job["id"] == record["job_id"]),
-            None
+    try:
+        request = Request(
+            "https://remotive.com/api/remote-jobs?limit=200",
+            headers={
+                "User-Agent": "Searchly-Capstone/1.0",
+                "Accept": "application/json"
+            }
         )
 
-        if job is not None:
-            results.append({
-                **job,
-                "status": record["status"],
-                "applied_at": record["applied_at"]
-            })
+        with urlopen(request, timeout=15) as response:
+            data = json.load(response)
 
-    return results
+        if not isinstance(data.get("jobs"), list):
+            raise ValueError(
+                "Invalid Remotive response"
+            )
+
+        remotive_cache["jobs"] = data["jobs"]
+        remotive_cache["expires"] = (
+            time.time() + 21600
+        )
+
+    except Exception as error:
+        logger.warning(
+            "Remotive unavailable: %s",
+            error
+        )
+
+    return remotive_cache["jobs"]
 
 
-@app.get("/recommendations")
-def recommend_jobs(skills: str = ""):
-    if not skills.strip():
+# Normalize Remotive jobs
+def normalize_remotive_job(job):
+    job_id = job.get("id")
+    url = job.get("url")
+
+    if not job_id or not url:
+        return None
+
+    description = job.get("description") or ""
+
+    return {
+        "id": f"remotive-{job_id}",
+        "title": job.get("title") or "Untitled job",
+        "company": job.get("company_name") or "Unknown",
+        "location": (
+            job.get("candidate_required_location")
+            or "Remote"
+        ),
+        "category": job.get("category") or "",
+        "salary": job.get("salary") or "",
+        "job_type": job.get("job_type") or "",
+        "seniority": [],
+        "published": job.get("publication_date") or "",
+        "url": url,
+        "source": "Remotive",
+        "skills": extract_skills(description),
+        **extract_requirements(description)
+    }
+
+
+# Real jobs from both providers
+@app.get("/jobs/live")
+def get_live_jobs(search: str = "", limit: int = 200):
+    query = search.strip().lower()
+    results = []
+
+    remotive_jobs = fetch_remotive_jobs()
+
+    if remotive_jobs is not None:
+        for job in remotive_jobs:
+            location = job.get(
+                "candidate_required_location"
+            )
+
+            if not is_us_eligible_location(location):
+                continue
+
+            searchable = " ".join([
+                str(job.get("title") or ""),
+                str(job.get("company_name") or ""),
+                str(job.get("category") or ""),
+                str(location or ""),
+                str(job.get("description") or "")
+            ]).lower()
+
+            if query and query not in searchable:
+                continue
+
+            normalized = normalize_remotive_job(job)
+
+            if normalized:
+                results.append(normalized)
+
+    try:
+        himalayas_jobs = get_himalayas_jobs(search)
+    except Exception as error:
+        logger.warning(
+            "Himalayas unavailable: %s",
+            error
+        )
+        himalayas_jobs = []
+
+    # Merge jobs using source-specific IDs
+    combined = {
+        job["id"]: job
+        for job in results
+    }
+
+    for job in himalayas_jobs:
+        if job.get("id"):
+            combined.setdefault(job["id"], job)
+
+    all_jobs = sorted(
+        combined.values(),
+        key=lambda job: str(
+            job.get("published") or ""
+        )[:10],
+        reverse=True
+    )
+
+    if remotive_jobs is None and not himalayas_jobs:
+        raise HTTPException(
+            status_code=502,
+            detail="Job providers are temporarily unavailable"
+        )
+
+    limit = max(1, min(limit, 200))
+
+    return all_jobs[:limit]
+
+
+# Existing TF-IDF skills matching
+@app.get("/recommendations/live")
+def recommend_live_jobs(
+    skills: str = "",
+    limit: int = 20
+):
+    user_skills = [
+        skill.strip()
+        for skill in skills.split(",")
+        if skill.strip()
+    ]
+
+    if not user_skills:
         raise HTTPException(
             status_code=400,
             detail="Please enter at least one skill"
         )
 
-    return match_jobs(skills, jobs)
+    jobs = get_live_jobs(search="", limit=200)
+
+    jobs_with_skills = [
+        job for job in jobs
+        if job.get("skills")
+    ]
+
+    if not jobs_with_skills:
+        return []
+
+    ranked_jobs = match_jobs(
+        ", ".join(user_skills),
+        jobs_with_skills
+    )
+
+    user_skill_set = {
+        skill.casefold()
+        for skill in user_skills
+    }
+
+    for job in ranked_jobs:
+        job["matched_skills"] = [
+            skill for skill in job["skills"]
+            if skill.casefold() in user_skill_set
+        ]
+
+        job["other_skills_mentioned"] = [
+            skill for skill in job["skills"]
+            if skill.casefold() not in user_skill_set
+        ]
+
+    return ranked_jobs[:max(1, min(limit, 30))]
+
+
+# New Search Agent endpoint
+
+@app.post("/api/agent/search")
+def search_agent(profile: AgentSearchRequest):
+    jobs = get_live_jobs(
+        search="",
+        limit=200
+    )
+
+    # Give AI more candidates than the final
+    # number the user requested.
+    wider_profile = profile.model_copy(
+        update={
+            "limit": min(
+                20,
+                max(12, profile.limit)
+            )
+        }
+    )
+
+    recommendations = recommend_agent_jobs(
+        jobs,
+        wider_profile
+    )
+
+    ai_used = False
+
+    try:
+        recommendations = enhance_agent_jobs(
+            recommendations,
+            profile
+        )
+
+        ai_used = bool(recommendations)
+
+    except Exception as error:
+        # Preserve the working job matcher if
+        # the free AI service is unavailable.
+        print(
+            "AI Agent fallback:",
+            type(error).__name__
+        )
+
+    return {
+        "message": "Search completed",
+        "jobs_considered": len(jobs),
+        "results": recommendations[:profile.limit],
+        "ai_used": ai_used,
+        "method": (
+            "AI and TF-IDF combined ranking"
+            if ai_used
+            else "TF-IDF fallback ranking"
+        ),
+    }
+
+def search_agent(profile: AgentSearchRequest):
+    jobs = get_live_jobs(
+        search="",
+        limit=200
+    )
+
+    recommendations = recommend_agent_jobs(
+        jobs,
+        profile
+    )
+
+    return {
+        "message": "Search completed",
+        "jobs_considered": len(jobs),
+        "results": recommendations,
+        "method": "TF-IDF and rule-based ranking"
+    }
+
+
+# Information required to save a job
+class LiveJobSave(BaseModel):
+    id: str
+    title: str
+    company: str
+    location: str = ""
+    url: HttpUrl
+    salary: str = ""
+
+
+# Save real job
+@app.post("/live/saved_jobs")
+def save_real_job(job: LiveJobSave):
+    is_remotive = (
+        job.id.startswith("remotive-")
+        and job.url.scheme == "https"
+        and job.url.host in (
+            "remotive.com",
+            "www.remotive.com"
+        )
+    )
+
+    is_himalayas = (
+        job.id.startswith("himalayas-")
+        and job.url.scheme == "https"
+    )
+
+    if not (is_remotive or is_himalayas):
+        raise HTTPException(
+            status_code=400,
+            detail="Unsupported job source"
+        )
+
+    database.save_live_job({
+        "id": job.id,
+        "title": job.title,
+        "company": job.company,
+        "location": job.location,
+        "url": str(job.url),
+        "salary": job.salary
+    })
+
+    return {
+        "message": "Job saved successfully"
+    }
+
+
+# Get saved jobs
+@app.get("/live/saved_jobs")
+def get_real_saved_jobs():
+    return database.get_live_saved_jobs()
+
+
+# Unsave job
+@app.delete("/live/saved_jobs/{job_id}")
+def unsave_real_job(job_id: str):
+    removed = database.remove_live_saved_job(
+        job_id
+    )
+
+    if not removed:
+        raise HTTPException(
+            status_code=404,
+            detail="Saved job not found"
+        )
+
+    return {
+        "message": "Job unsaved"
+    }
+
+
+# Record application
+@app.post("/live/applications/{job_id}")
+def add_real_application(job_id: str):
+    recorded = database.add_live_application(
+        job_id
+    )
+
+    if not recorded:
+        raise HTTPException(
+            status_code=404,
+            detail="Save the job before tracking it"
+        )
+
+    return {
+        "message": "Application recorded"
+    }
+
+
+# Get application history
+@app.get("/live/applications")
+def get_real_applications():
+    return database.get_live_applications()
+
+
+# Update application status
+@app.patch("/live/applications/{job_id}")
+def update_real_application(job_id: str, status: str):
+    allowed = {
+        "Applied",
+        "Interviewing",
+        "Offered",
+        "Rejected"
+    }
+
+    if status not in allowed:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid application status"
+        )
+
+    updated = database.update_live_application_status(
+        job_id,
+        status
+    )
+
+    if not updated:
+        raise HTTPException(
+            status_code=404,
+            detail="Application not found"
+        )
+
+    return {
+        "message": "Status updated",
+        "status": status
+    }
+
+
+# Archive application
+@app.patch("/live/applications/{job_id}/archive")
+def archive_real_application(job_id: str):
+    updated = database.set_live_application_archived(
+        job_id,
+        True
+    )
+
+    if not updated:
+        raise HTTPException(
+            status_code=404,
+            detail="Application not found"
+        )
+
+    return {
+        "message": "Application archived"
+    }
+
+
+# Restore application
+@app.patch("/live/applications/{job_id}/restore")
+def restore_real_application(job_id: str):
+    updated = database.set_live_application_archived(
+        job_id,
+        False
+    )
+
+    if not updated:
+        raise HTTPException(
+            status_code=404,
+            detail="Application not found"
+        )
+
+    return {
+        "message": "Application restored"
+    }
